@@ -1,16 +1,8 @@
 'use strict';
 
 const express = require('express');
-const {
-  getAllUsers,
-  getUserById,
-  updateUserStatus,
-  getOwnProfile,
-  updateOwnProfile,
-  updateOwnPassword,
-} = require('../controllers/userController');
+const { userController, authenticate, authorize } = require('../composition-root');
 const validate = require('../middlewares/validate');
-const { authenticate, authorize } = require('../middlewares/auth');
 const {
   updateProfileSchema,
   updatePasswordSchema,
@@ -22,18 +14,28 @@ const router = express.Router();
 
 // Static routes MUST come before the `:id` route, otherwise `/:id` would
 // shadow `/profile`, `/password`, etc. (Express matches in declaration order.)
-router.get('/profile', authenticate, getOwnProfile);
-router.put('/profile/update', authenticate, validate(updateProfileSchema), updateOwnProfile);
-router.patch('/password', authenticate, validate(updatePasswordSchema), updateOwnPassword);
+router.get('/profile', authenticate, userController.getOwnProfile);
+router.put(
+  '/profile/update',
+  authenticate,
+  validate(updateProfileSchema),
+  userController.updateOwnProfile
+);
+router.patch(
+  '/password',
+  authenticate,
+  validate(updatePasswordSchema),
+  userController.updateOwnPassword
+);
 
 // Admin-only listing & lookup
-router.get('/', authenticate, authorize('admin'), getAllUsers);
+router.get('/', authenticate, authorize('admin'), userController.getAllUsers);
 router.get(
   '/:id',
   authenticate,
   authorize('admin'),
   validate(idParamSchema, 'params'),
-  getUserById
+  userController.getUserById
 );
 router.patch(
   '/:id/status',
@@ -41,7 +43,7 @@ router.patch(
   authorize('admin'),
   validate(idParamSchema, 'params'),
   validate(updateStatusSchema),
-  updateUserStatus
+  userController.updateUserStatus
 );
 
 module.exports = router;

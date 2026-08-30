@@ -1,7 +1,7 @@
 'use strict';
 
 const { ValidationError } = require('joi');
-const ApiError = require('../utils/ApiError');
+const { BadRequestError } = require('../errors');
 
 // Reusable validator factory — wraps a Joi schema into an Express middleware.
 const validate = (schema, target = 'body') => (req, _res, next) => {
@@ -13,7 +13,7 @@ const validate = (schema, target = 'body') => (req, _res, next) => {
   });
   if (error) {
     const message = error.details.map((d) => d.message).join('; ');
-    return next(new ApiError(400, message));
+    return next(new BadRequestError(message));
   }
   // Persist the cleaned payload back onto the request.
   // `req.query` is read-only in Express 5, so copy properties onto it instead

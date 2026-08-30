@@ -1,9 +1,9 @@
 'use strict';
 
-const ApiError = require('../utils/ApiError');
+const { NotFoundError } = require('../errors');
 
 const notFoundHandler = (req, _res, next) => {
-  next(new ApiError(404, `Route not found: ${req.method} ${req.originalUrl}`));
+  next(new NotFoundError(`Route not found: ${req.method} ${req.originalUrl}`));
 };
 
 // Central error handler — converts thrown errors into JSON responses with the

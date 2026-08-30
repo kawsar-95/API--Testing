@@ -2,13 +2,13 @@
 
 const app = require('./app');
 const { connectDB } = require('./config/database');
-const { seedAdmin } = require('./utils/seed');
+const { adminSeeder } = require('./composition-root');
 const config = require('./config');
 
 (async () => {
   try {
     await connectDB();
-    await seedAdmin();
+    await adminSeeder.seed();
     app.listen(config.port, () => {
       console.log(`Server is running on http://localhost:${config.port}`);
     });

@@ -2,7 +2,6 @@
 
 const { DataTypes, Model } = require('sequelize');
 const { sequelize } = require('../config/database');
-const bcrypt = require('bcryptjs');
 
 class User extends Model {
   // Helper: strip sensitive fields before returning to clients.
@@ -10,10 +9,6 @@ class User extends Model {
     const { id, firstname, lastname, email, isActive, role, createAt, updateAt } =
       this.get();
     return { id, firstname, lastname, email, isActive, role, createAt, updateAt };
-  }
-
-  async checkPassword(plain) {
-    return bcrypt.compare(plain, this.password);
   }
 }
 
@@ -96,20 +91,6 @@ User.init(
     timestamps: true,
     createdAt: 'createAt',
     updatedAt: 'updateAt',
-    hooks: {
-      beforeCreate: async (user) => {
-        if (user.password) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      },
-      beforeUpdate: async (user) => {
-        if (user.changed('password')) {
-          const salt = await bcrypt.genSalt(10);
-          user.password = await bcrypt.hash(user.password, salt);
-        }
-      },
-    },
   }
 );
 

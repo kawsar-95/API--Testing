@@ -35,19 +35,40 @@ blog-api/
 └── src/
     ├── server.js             # entry point
     ├── app.js                # Express app + route mounting
+    ├── composition-root.js   # wires repositories -> services -> controllers/middleware
     ├── config/
     │   ├── index.js          # env-backed config
     │   └── database.js       # Sequelize bootstrap
     ├── models/
     │   ├── index.js          # associations
-    │   ├── User.js           # users table
-    │   └── Blog.js           # blogs table
-    ├── controllers/
+    │   ├── User.js           # users table (pure data shape + toSafeJSON)
+    │   └── Blog.js           # blogs table (pure data shape + toPublicJSON)
+    ├── repositories/         # data access, one class per aggregate
+    │   ├── BaseRepository.js # generic CRUD over a Sequelize model
+    │   ├── UserRepository.js
+    │   └── BlogRepository.js
+    ├── services/             # business rules, constructor-injected collaborators
+    │   ├── PasswordHasher.js
+    │   ├── TokenService.js
+    │   ├── BlogAuthorizationPolicy.js
+    │   ├── AuthService.js
+    │   ├── UserService.js
+    │   ├── BlogService.js
+    │   └── AdminSeeder.js    # seeds default admin on first boot
+    ├── controllers/          # thin, class-based — req/res translation only
     │   ├── authController.js
     │   ├── userController.js
     │   └── blogController.js
+    ├── errors/                # ApiError + typed subclasses (400/401/403/404/409)
+    │   ├── ApiError.js
+    │   ├── BadRequestError.js
+    │   ├── UnauthorizedError.js
+    │   ├── ForbiddenError.js
+    │   ├── NotFoundError.js
+    │   ├── ConflictError.js
+    │   └── index.js
     ├── middlewares/
-    │   ├── auth.js           # authenticate + authorize
+    │   ├── auth.js           # createAuthMiddleware() -> { authenticate, authorize }
     │   ├── validate.js       # Joi-driven validation factory
     │   └── error.js          # 404 + central error handler
     ├── routes/
@@ -58,11 +79,13 @@ blog-api/
     │   ├── authValidator.js
     │   └── blogValidator.js
     └── utils/
-        ├── ApiError.js
         ├── asyncHandler.js
-        ├── jwt.js
-        └── seed.js           # seeds default admin on first boot
+        └── jwt.js
 ```
+
+### Architecture
+
+The app follows a layered, SOLID-aligned structure: `routes → controllers → services → repositories → Sequelize models`. Controllers only translate HTTP req/res; business rules (password hashing, JWT issuance, blog-ownership authorization, self-deactivation guard) live in `services/`; data access is isolated in `repositories/`, all extending a common `BaseRepository`. Every dependency is constructor-injected and wired once in `composition-root.js`, and errors are typed subclasses of `ApiError` (`NotFoundError`, `ForbiddenError`, etc.) instead of a single generic error with a magic status code.
 
 ---
 
