@@ -1,6 +1,6 @@
 # Blog Application REST API
 
-REST API for a Blog Management Application — Assignment submission, **Batch 19** (Student ID **NK22278**).
+REST API for a Blog Management Application
 
 Three access levels are supported — **Admin**, **User**, and **Guest** — with token-based JWT authentication, bcrypt-hashed passwords, Joi request validation, and a public guest flow for browsing / searching / filtering blogs.
 
