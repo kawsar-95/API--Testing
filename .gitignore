@@ -1,0 +1,5 @@
+node_modules/
+.env
+*.log
+blogdb.sqlite
+.DS_Store
